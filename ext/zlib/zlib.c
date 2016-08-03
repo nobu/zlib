@@ -4715,6 +4715,8 @@ Init_zlib(void)
     VALUE mZlib, cZStream, cDeflate, cInflate;
 #if GZIP_SUPPORT
     VALUE cGzipFile, cGzipWriter, cGzipReader;
+    const char *os_name = NULL;
+    size_t os_name_len = 0;
 #endif
 
     mZlib = rb_define_module("Zlib");
@@ -4982,6 +4984,13 @@ Init_zlib(void)
 
     /* The OS code of current host */
     rb_define_const(mZlib, "OS_CODE", INT2FIX(OS_CODE));
+# define rb_define_const(m, name, val) do { \
+        rb_define_const(m, name, val); \
+        if (INT2FIX(OS_CODE) == val) { \
+            os_name = &name[sizeof("OS_") - 1]; \
+            os_name_len = sizeof(name) - sizeof("OS_"); \
+        } \
+    } while (0)
     /* OS code for MSDOS hosts */
     rb_define_const(mZlib, "OS_MSDOS", INT2FIX(OS_MSDOS));
     /* OS code for Amiga hosts */
@@ -5012,6 +5021,11 @@ Init_zlib(void)
     rb_define_const(mZlib, "OS_RISCOS", INT2FIX(OS_RISCOS));
     /* OS code for unknown hosts */
     rb_define_const(mZlib, "OS_UNKNOWN", INT2FIX(OS_UNKNOWN));
+# undef rb_define_const
+    if (os_name) {
+        /* Current OS code name */
+        rb_define_const(mZlib, "OS", rb_str_new_static(os_name, os_name_len));
+    }
 
     id_level = rb_intern("level");
     id_strategy = rb_intern("strategy");
