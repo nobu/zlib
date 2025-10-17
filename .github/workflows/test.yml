@@ -37,7 +37,12 @@ jobs:
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: ${{ matrix.ruby }}
-        bundler-cache: true # 'bundle install' and cache
+        bundler-cache: false
+    - run: |
+        rm -f Gemfile.lock
+        bundle install
+        cat Gemfile.lock
+      shell: bash
     - name: Run test
       run: bundle exec rake compile test
       timeout-minutes: 5
